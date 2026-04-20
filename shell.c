@@ -68,7 +68,7 @@ int main(void)
 			execve(command, argv, environ);
 			/* If execve returns, there was an error */
 			fprintf(stderr, "./shell: %s: No such file or directory\n", command);
-			exit(127);
+			_exit(127);
 		}
 		else
 		{
