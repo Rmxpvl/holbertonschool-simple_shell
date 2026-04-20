@@ -1,56 +1,55 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/types.h>
 #include <string.h>
-
-#define BUFFER_SIZE 1024
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 extern char **environ;
 
 /**
- * main - Simple UNIX command line interpreter
- * Description: A basic shell that executes commands with full paths.
- *              Reads from stdin, displays prompt, and executes commands.
- *              Handles EOF (Ctrl+D) gracefully.
- * Return: 0 on success
+ * main - Entry point of the simple shell
+ *
+ * Return: Always 0
  */
-int main(int ac, char *av[])
+int main(void)
 {
-	char buffer[BUFFER_SIZE];
-	char *command;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t nread;
 	pid_t pid;
-	int is_interactive;
-
-	(void)ac;
-
-	is_interactive = isatty(STDIN_FILENO);
+	int status;
+	char *newline;
 
 	while (1)
 	{
-		if (is_interactive)
-		{
-			printf("#cisfun$ ");
-			fflush(stdout);
-		}
+		/* Display prompt only if interactive (terminal) */
+		if (isatty(STDIN_FILENO))
+			write(STDOUT_FILENO, "$ ", 2);
 
-		if (fgets(buffer, BUFFER_SIZE, stdin) == NULL)
+		/* Read a line from stdin */
+		nread = getline(&line, &len, stdin);
+
+		/* Handle EOF (Ctrl+D) */
+		if (nread == -1)
 		{
-			break;
+			if (isatty(STDIN_FILENO))
+				write(STDOUT_FILENO, "\n", 1);
+			free(line);
+			exit(0);
 		}
 
 		/* Remove trailing newline */
-		command = buffer;
-		command[strcspn(command, "\n")] = '\0';
+		newline = strchr(line, '\n');
+		if (newline)
+			*newline = '\0';
 
-		/* Skip empty commands */
-		if (command[0] == '\0')
+		/* Skip empty input */
+		if (line[0] == '\0')
 			continue;
 
 		/* Fork a child process */
 		pid = fork();
-
 		if (pid == -1)
 		{
 			perror("fork");
@@ -59,22 +58,27 @@ int main(int ac, char *av[])
 
 		if (pid == 0)
 		{
-			/* Child process: execute the command */
+			/* Child process: build argv and execute */
 			char *argv[2];
 
-			argv[0] = command;
+			argv[0] = line;
 			argv[1] = NULL;
-			execve(command, argv, environ);
-			/* If execve returns, there was an error */
-			fprintf(stderr, "%s: No such file or directory\n", av[0]);
-			exit(127);
+
+			if (execve(line, argv, environ) == -1)
+			{
+				/* execve failed: command not found or not executable */
+				fprintf(stderr, "./simple_shell: 1: %s: not found\n", line);
+				free(line);
+				exit(127);
+			}
 		}
 		else
 		{
-			/* Parent process: wait for child to finish */
-			wait(NULL);
+			/* Parent process: wait for child */
+			waitpid(pid, &status, 0);
 		}
 	}
 
+	free(line);
 	return (0);
 }
