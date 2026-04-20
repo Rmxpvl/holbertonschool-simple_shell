@@ -16,35 +16,32 @@ extern char **environ;
  *              Handles EOF (Ctrl+D) gracefully.
  * Return: 0 on success
  */
-int main(void)
+int main(int ac, char *av[])
 {
-	char command[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE];
+	char *command;
 	pid_t pid;
-	int status;
-	int is_tty;
+	int is_interactive;
 
-	/* Check if stdin is a terminal (for prompt display) */
-	is_tty = isatty(STDIN_FILENO);
+	(void)ac;
+
+	is_interactive = isatty(STDIN_FILENO);
 
 	while (1)
 	{
-		/* Display prompt only if stdin is a terminal */
-		if (is_tty)
+		if (is_interactive)
 		{
 			printf("#cisfun$ ");
 			fflush(stdout);
 		}
 
-		/* Read command from user */
-		if (fgets(command, BUFFER_SIZE, stdin) == NULL)
+		if (fgets(buffer, BUFFER_SIZE, stdin) == NULL)
 		{
-			/* Handle EOF (Ctrl+D) */
-			if (is_tty)
-				printf("\n");
 			break;
 		}
 
 		/* Remove trailing newline */
+		command = buffer;
 		command[strcspn(command, "\n")] = '\0';
 
 		/* Skip empty commands */
@@ -63,17 +60,19 @@ int main(void)
 		if (pid == 0)
 		{
 			/* Child process: execute the command */
-			char *argv[] = {command, NULL};
+			char *argv[2];
 
+			argv[0] = command;
+			argv[1] = NULL;
 			execve(command, argv, environ);
 			/* If execve returns, there was an error */
-			fprintf(stderr, "./shell: %s: No such file or directory\n", command);
-			_exit(127);
+			fprintf(stderr, "%s: No such file or directory\n", av[0]);
+			exit(127);
 		}
 		else
 		{
 			/* Parent process: wait for child to finish */
-			waitpid(pid, &status, 0);
+			wait(NULL);
 		}
 	}
 
