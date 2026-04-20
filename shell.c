@@ -9,10 +9,12 @@ extern char **environ;
 
 /**
  * main - Entry point of the simple shell
+ * @argc: argument count (unused)
+ * @argv: argument vector, argv[0] is the program name
  *
- * Return: Always 0
+ * Return: 0 on success
  */
-int main(void)
+int main(int argc, char **argv)
 {
 	char *line = NULL;
 	size_t len = 0;
@@ -20,35 +22,39 @@ int main(void)
 	pid_t pid;
 	int status;
 	char *newline;
+	int cmd_num = 1;
+	int last_exit = 0;
+
+	(void)argc;
 
 	while (1)
 	{
-		/* Display prompt only if interactive (terminal) */
+		/* Display prompt only in interactive mode */
 		if (isatty(STDIN_FILENO))
 			write(STDOUT_FILENO, "$ ", 2);
 
-		/* Read a line from stdin */
+		/* Read line */
 		nread = getline(&line, &len, stdin);
 
-		/* Handle EOF (Ctrl+D) */
+		/* EOF */
 		if (nread == -1)
 		{
 			if (isatty(STDIN_FILENO))
 				write(STDOUT_FILENO, "\n", 1);
 			free(line);
-			exit(0);
+			exit(last_exit);
 		}
 
-		/* Remove trailing newline */
+		/* Strip newline */
 		newline = strchr(line, '\n');
 		if (newline)
 			*newline = '\0';
 
-		/* Skip empty input */
+		/* Skip empty lines */
 		if (line[0] == '\0')
 			continue;
 
-		/* Fork a child process */
+		/* Fork */
 		pid = fork();
 		if (pid == -1)
 		{
@@ -58,27 +64,28 @@ int main(void)
 
 		if (pid == 0)
 		{
-			/* Child process: build argv and execute */
-			char *argv[2];
+			char *child_argv[2];
 
-			argv[0] = line;
-			argv[1] = NULL;
+			child_argv[0] = line;
+			child_argv[1] = NULL;
 
-			if (execve(line, argv, environ) == -1)
+			if (execve(line, child_argv, environ) == -1)
 			{
-				/* execve failed: command not found or not executable */
-				fprintf(stderr, "./simple_shell: 1: %s: not found\n", line);
+				fprintf(stderr, "%s: %d: %s: not found\n",
+					argv[0], cmd_num, line);
 				free(line);
 				exit(127);
 			}
 		}
 		else
 		{
-			/* Parent process: wait for child */
 			waitpid(pid, &status, 0);
+			if (WIFEXITED(status))
+				last_exit = WEXITSTATUS(status);
 		}
+		cmd_num++;
 	}
 
 	free(line);
-	return (0);
+	return (last_exit);
 }
