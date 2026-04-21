@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"exit:$?\")",
+      "Bash(echo \"notfound:$?\")",
+      "Bash(betty *.c *.h)",
+      "Bash(echo \"EOF:$?\")"
+    ]
+  }
+}
