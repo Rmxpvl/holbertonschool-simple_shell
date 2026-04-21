@@ -1,16 +1,16 @@
 CC = gcc
 CFLAGS = -Wall -Werror -Wextra -pedantic -std=gnu89
 TARGET = hsh
-SRC = shell.c _getenv.c
-OBJ = shell.o _getenv.o
+SRC = shell.c _getenv.c path.c execute.c
+OBJ = $(SRC:.c=.o)
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
 
-$(OBJ): $(SRC)
-	$(CC) $(CFLAGS) -c $(SRC)
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJ) $(TARGET)
