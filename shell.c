@@ -13,7 +13,7 @@ char *find_in_path(char *cmd)
 	char *path_env, *path_copy, *dir, *full;
 	size_t len;
 
-	path_env = getenv("PATH");
+	path_env = _getenv("PATH");
 	if (!path_env || path_env[0] == '\0')
 		return (NULL);
 

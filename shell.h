@@ -11,3 +11,5 @@
 void run_shell(char *prog_name);
 
 #endif /* SHELL_H */
+extern char **environ;
+char *_getenv(const char *name);

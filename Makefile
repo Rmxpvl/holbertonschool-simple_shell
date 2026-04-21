@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -Werror -Wextra -pedantic -std=gnu89
 TARGET = hsh
-SRC = shell.c
-OBJ = shell.o
+SRC = shell.c _getenv.c
+OBJ = shell.o _getenv.o
 
 all: $(TARGET)
 
