@@ -13,7 +13,8 @@ extern char **environ;
 
 char *_getenv(const char *name);
 char *find_in_path(char *cmd);
+int fork_execute(char *path, char **args, char *prog_name, int line_num);
 int execute(char **args, char *prog_name, int line_num);
-void run_shell(char *prog_name);
+int run_shell(char *prog_name);
 
 #endif /* SHELL_H */
