@@ -10,28 +10,43 @@
  */
 int fork_execute(char *path, char **args, char *prog_name, int line_num)
 {
-	pid_t pid;
-	int status = 0;
+pid_t pid;
+int status = 0;
 
-	pid = fork();
-	if (pid == -1)
-	{
-		perror("fork");
-		return (1);
-	}
-	if (pid == 0)
-	{
-		args[0] = path;
-		execve(path, args, environ);
-		fprintf(stderr, "%s: %d: %s: not found\n",
-			prog_name, line_num, path);
-		exit(127);
-	}
-	waitpid(pid, &status, 0);
+pid = fork();
+if (pid == -1)
+{
+perror("fork");
+return (1);
+}
+if (pid == 0)
+{
+args[0] = path;
+execve(path, args, environ);
+fprintf(stderr, "%s: %d: %s: not found\n",
+prog_name, line_num, path);
+exit(127);
+}
+waitpid(pid, &status, 0);
 
-	if (WIFEXITED(status))
-		return (WEXITSTATUS(status));
-	return (1);
+if (WIFEXITED(status))
+return (WEXITSTATUS(status));
+return (1);
+}
+
+/**
+ * print_err - prints execution errors
+ * @pname: program name
+ * @lnum: line number
+ * @cmd: command name
+ * @type: 1 for not found, 2 for permission denied
+ */
+void print_err(char *pname, int lnum, char *cmd, int type)
+{
+if (type == 1)
+fprintf(stderr, "%s: %d: %s: not found\n", pname, lnum, cmd);
+else
+fprintf(stderr, "%s: %d: %s: Permission denied\n", pname, lnum, cmd);
 }
 
 /**
@@ -43,36 +58,41 @@ int fork_execute(char *path, char **args, char *prog_name, int line_num)
  */
 int execute(char **args, char *prog_name, int line_num)
 {
-	char *path;
-	int need_free = 0, status;
-	struct stat st;
+char *path;
+int need_free = 0, status;
+struct stat st;
 
-	if (args[0][0] == '/' || args[0][0] == '.')
-	{
-		if (stat(args[0], &st) != 0 || access(args[0], X_OK) != 0)
-		{
-			fprintf(stderr, "%s: %d: %s: not found\n",
-				prog_name, line_num, args[0]);
-			return (127);
-		}
-		path = args[0];
-	}
-	else
-	{
-		path = find_in_path(args[0]);
-		if (!path)
-		{
-			fprintf(stderr, "%s: %d: %s: not found\n",
-				prog_name, line_num, args[0]);
-			return (127);
-		}
-		need_free = 1;
-	}
-
-	status = fork_execute(path, args, prog_name, line_num);
-
-	if (need_free)
-		free(path);
-
-	return (status);
+if (strchr(args[0], '/'))
+{
+if (access(args[0], F_OK) != 0)
+{
+print_err(prog_name, line_num, args[0], 1);
+return (127);
+}
+if (stat(args[0], &st) == 0 && S_ISDIR(st.st_mode))
+{
+print_err(prog_name, line_num, args[0], 2);
+return (126);
+}
+if (access(args[0], X_OK) != 0)
+{
+print_err(prog_name, line_num, args[0], 2);
+return (126);
+}
+path = args[0];
+}
+else
+{
+path = find_in_path(args[0]);
+if (!path)
+{
+print_err(prog_name, line_num, args[0], 1);
+return (127);
+}
+need_free = 1;
+}
+status = fork_execute(path, args, prog_name, line_num);
+if (need_free)
+free(path);
+return (status);
 }
