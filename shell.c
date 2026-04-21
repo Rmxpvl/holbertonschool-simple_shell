@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
-			write(1, "$ ", 2);
+			write(1, "($) ", 4);
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
 		{

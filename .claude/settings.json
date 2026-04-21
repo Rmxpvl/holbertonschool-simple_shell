@@ -10,7 +10,15 @@
       "Bash(echo \"sh exit: $?\" echo \"/bin/ls\")",
       "Bash(echo \"hsh exit: $?\")",
       "Bash(echo \"hsh not-found exit: $?\")",
-      "Bash(echo \"hsh success exit: $?\")"
+      "Bash(echo \"hsh success exit: $?\")",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ log --oneline -5)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ show --stat HEAD)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ status)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ diff origin/main HEAD --stat)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ show HEAD:shell.c)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ log --oneline --all -10)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ show 99569fd:shell.c)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ ls-files)"
     ]
   }
 }

@@ -1,0 +1,51 @@
+.TH SIMPLE_SHELL 1 "April 2026" "1.0" "Simple Shell Manual"
+
+.SH NAME
+simple_shell \- a simple UNIX command line interpreter
+
+.SH SYNOPSIS
+.B simple_shell
+
+.SH DESCRIPTION
+.B simple_shell
+is a minimal UNIX command line interpreter (shell).
+It reads commands from standard input, one per line,
+and executes them using
+.BR execve (2).
+
+In interactive mode, a prompt is displayed before each command.
+In non-interactive mode, commands are read from a pipe or file.
+
+.SH USAGE
+Interactive mode:
+.RS
+.nf
+$ ./hsh
+($) /bin/ls
+($) exit
+.fi
+.RE
+
+Non-interactive mode:
+.RS
+.nf
+$ echo "/bin/ls" | ./hsh
+.fi
+.RE
+
+.SH EXIT STATUS
+The exit status of the shell is the exit status of the last command executed.
+If a command is not found, the exit status is 127.
+
+.SH ENVIRONMENT
+The current environment is passed to executed commands via
+.BR execve (2).
+
+.SH AUTHORS
+Remy Pinville <remy.pinville@gmail.com>
+Ilann Camelin <I.camelin74@gmail.com>
+
+.SH SEE ALSO
+.BR sh (1),
+.BR execve (2),
+.BR fork (2)
