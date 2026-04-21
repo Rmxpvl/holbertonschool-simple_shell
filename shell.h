@@ -11,6 +11,6 @@
 extern char **environ;
 
 char	*get_path(char *line, char **envp, int *sfree);
-int	execute(char *line, char **argv, char **envp);
+int	execute(char *line, char **argv, char **envp, int line_num);
 
 #endif /* SHELL_H */

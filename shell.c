@@ -22,10 +22,11 @@ char *get_path(char *line, char **envp, int *sfree)
  * @line: the command to run
  * @argv: shell argv for error messages
  * @envp: environment variables
+ * @line_num: line number for error messages
  *
  * Return: exit status of the child process
  */
-int execute(char *line, char **argv, char **envp)
+int execute(char *line, char **argv, char **envp, int line_num)
 {
 	char *path;
 	char *args[2];
@@ -35,7 +36,7 @@ int execute(char *line, char **argv, char **envp)
 	path = get_path(line, envp, &sfree);
 	if (!path)
 	{
-		fprintf(stderr, "%s: %s: No such file or directory\n", argv[0], line);
+		fprintf(stderr, "%s: %d: %s: not found\n", argv[0], line_num, line);
 		return (127);
 	}
 	args[0] = line;
@@ -51,7 +52,7 @@ int execute(char *line, char **argv, char **envp)
 	if (pid == 0)
 	{
 		execve(path, args, envp);
-		fprintf(stderr, "%s: %s: No such file or directory\n", argv[0], line);
+		fprintf(stderr, "%s: %d: %s: not found\n", argv[0], line_num, line);
 		exit(127);
 	}
 	waitpid(pid, &status, 0);
@@ -76,7 +77,7 @@ int main(int argc, char **argv, char **envp)
 	char *newline;
 	size_t len = 0;
 	ssize_t nread;
-	int last_status = 0;
+	int last_status = 0, line_num = 1;
 
 	(void)argc;
 	while (1)
@@ -95,8 +96,12 @@ int main(int argc, char **argv, char **envp)
 		if (newline)
 			*newline = '\0';
 		if (line[0] == '\0')
+		{
+			line_num++;
 			continue;
-		last_status = execute(line, argv, envp);
+		}
+		last_status = execute(line, argv, envp, line_num);
+		line_num++;
 	}
 	free(line);
 	return (last_status);

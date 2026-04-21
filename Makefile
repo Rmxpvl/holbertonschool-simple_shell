@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Werror -Wextra -pedantic
-TARGET = shell
+CFLAGS = -Wall -Werror -Wextra -pedantic -std=gnu89
+TARGET = hsh
 SRC = shell.c
 OBJ = shell.o
 
