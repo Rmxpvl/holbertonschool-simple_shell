@@ -8,9 +8,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-extern char **environ;
-
-char	*get_path(char *line, char **envp, int *sfree);
-int	execute(char *line, char **argv, char **envp, int line_num);
+void run_shell(char *prog_name);
 
 #endif /* SHELL_H */

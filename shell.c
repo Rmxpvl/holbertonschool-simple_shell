@@ -1,16 +1,16 @@
 #include "shell.h"
 
+extern char **environ;
+
 /**
  * get_path - validates command path
  * @line: the command (must be an absolute path)
- * @envp: environment variables (unused for task 0.1)
  * @sfree: set to 1 if returned path must be freed
  *
  * Return: path if it's absolute, NULL otherwise
  */
-char *get_path(char *line, char **envp, int *sfree)
+char *get_path(char *line, int *sfree)
 {
-	(void)envp;
 	*sfree = 0;
 	if (line[0] == '/' && access(line, F_OK) == 0)
 		return (line);
@@ -20,23 +20,22 @@ char *get_path(char *line, char **envp, int *sfree)
 /**
  * execute - forks and executes a command
  * @line: the command to run
- * @argv: shell argv for error messages
- * @envp: environment variables
+ * @prog_name: shell program name for error messages
  * @line_num: line number for error messages
  *
  * Return: exit status of the child process
  */
-int execute(char *line, char **argv, char **envp, int line_num)
+int execute(char *line, char *prog_name, int line_num)
 {
 	char *path;
 	char *args[2];
 	int sfree = 0, status = 0;
 	pid_t pid;
 
-	path = get_path(line, envp, &sfree);
+	path = get_path(line, &sfree);
 	if (!path)
 	{
-		fprintf(stderr, "%s: %d: %s: not found\n", argv[0], line_num, line);
+		fprintf(stderr, "%s: %d: %s: not found\n", prog_name, line_num, line);
 		return (127);
 	}
 	args[0] = line;
@@ -51,8 +50,8 @@ int execute(char *line, char **argv, char **envp, int line_num)
 	}
 	if (pid == 0)
 	{
-		execve(path, args, envp);
-		fprintf(stderr, "%s: %d: %s: not found\n", argv[0], line_num, line);
+		execve(path, args, environ);
+		fprintf(stderr, "%s: %d: %s: not found\n", prog_name, line_num, line);
 		exit(127);
 	}
 	waitpid(pid, &status, 0);
@@ -64,22 +63,19 @@ int execute(char *line, char **argv, char **envp, int line_num)
 }
 
 /**
- * main - entry point of the simple shell
- * @argc: argument count (unused)
- * @argv: argument vector
- * @envp: environment variables
+ * run_shell - main shell loop
+ * @prog_name: program name for error messages
  *
- * Return: last command exit status
+ * Return: void
  */
-int main(int argc, char **argv, char **envp)
+void run_shell(char *prog_name)
 {
 	char *line = NULL;
 	char *newline;
 	size_t len = 0;
 	ssize_t nread;
-	int last_status = 0, line_num = 1;
+	int line_num = 1;
 
-	(void)argc;
 	while (1)
 	{
 		if (isatty(STDIN_FILENO))
@@ -90,7 +86,7 @@ int main(int argc, char **argv, char **envp)
 			if (isatty(STDIN_FILENO))
 				write(1, "\n", 1);
 			free(line);
-			return (last_status);
+			return;
 		}
 		newline = strchr(line, '\n');
 		if (newline)
@@ -100,9 +96,21 @@ int main(int argc, char **argv, char **envp)
 			line_num++;
 			continue;
 		}
-		last_status = execute(line, argv, envp, line_num);
+		execute(line, prog_name, line_num);
 		line_num++;
 	}
-	free(line);
-	return (last_status);
+}
+
+/**
+ * main - entry point
+ * @argc: argument count (unused)
+ * @argv: argument vector
+ *
+ * Return: 0
+ */
+int main(int argc, char **argv)
+{
+	(void)argc;
+	run_shell(argv[0]);
+	return (0);
 }
