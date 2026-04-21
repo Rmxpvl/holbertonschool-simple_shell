@@ -1,29 +1,6 @@
 #include "shell.h"
 
 /**
- * _atoi - converts string to int
- * @s: string
- * Return: integer or -1 on error
- */
-int _atoi(char *s)
-{
-int n = 0;
-int i = 0;
-
-if (s[i] == '+')
-i++;
-if (!s[i])
-return (-1);
-for (; s[i]; i++)
-{
-if (s[i] < '0' || s[i] > '9')
-return (-1);
-n = n * 10 + (s[i] - '0');
-}
-return (n);
-}
-
-/**
  * handle_builtins - Checks and executes built-in commands
  * @args: Argument array
  * @line_num: Current line number
@@ -35,22 +12,11 @@ return (n);
 int handle_builtins(char **args, int *line_num, char *line, int last_status,
 	char *prog_name)
 {
-int i, num;
+int i;
+(void)prog_name;
 
 if (strcmp(args[0], "exit") == 0)
 {
-if (args[1])
-{
-num = _atoi(args[1]);
-if (num == -1)
-{
-fprintf(stderr, "%s: %d: exit: Illegal number: %s\n",
-prog_name, *line_num, args[1]);
-free(line);
-exit(2);
-}
-last_status = num % 256;
-}
 free(line);
 exit(last_status);
 }
