@@ -4,7 +4,13 @@
       "Bash(echo \"exit:$?\")",
       "Bash(echo \"notfound:$?\")",
       "Bash(betty *.c *.h)",
-      "Bash(echo \"EOF:$?\")"
+      "Bash(echo \"EOF:$?\")",
+      "Bash(echo \"sh exit: $?\" echo \"qwerty\")",
+      "Bash(echo \"hsh exit: $?\" echo \"---\" echo \"/bin/ls\")",
+      "Bash(echo \"sh exit: $?\" echo \"/bin/ls\")",
+      "Bash(echo \"hsh exit: $?\")",
+      "Bash(echo \"hsh not-found exit: $?\")",
+      "Bash(echo \"hsh success exit: $?\")"
     ]
   }
 }

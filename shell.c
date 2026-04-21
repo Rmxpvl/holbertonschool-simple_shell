@@ -5,11 +5,13 @@
  * @line: the command to run
  * @argv: shell argv for error messages
  * @cmd_num: command number for error messages
+ *
+ * Return: exit status of the child process
  */
-void execute(char *line, char **argv, int cmd_num)
+int execute(char *line, char **argv, int cmd_num)
 {
 	pid_t pid;
-	int status;
+	int status = 0;
 	char *args[2];
 
 	args[0] = line;
@@ -18,7 +20,7 @@ void execute(char *line, char **argv, int cmd_num)
 	if (pid == -1)
 	{
 		perror("fork");
-		return;
+		return (1);
 	}
 	if (pid == 0)
 	{
@@ -30,6 +32,9 @@ void execute(char *line, char **argv, int cmd_num)
 		}
 	}
 	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	return (1);
 }
 
 /**
@@ -46,6 +51,7 @@ int main(int argc, char **argv)
 	size_t len = 0;
 	ssize_t nread;
 	int cmd_num = 1;
+	int last_status = 0;
 
 	(void)argc;
 	while (1)
@@ -58,16 +64,16 @@ int main(int argc, char **argv)
 			if (isatty(STDIN_FILENO))
 				write(1, "\n", 1);
 			free(line);
-			return (0);
+			return (last_status);
 		}
 		newline = strchr(line, '\n');
 		if (newline)
 			*newline = '\0';
 		if (line[0] == '\0')
 			continue;
-		execute(line, argv, cmd_num);
+		last_status = execute(line, argv, cmd_num);
 		cmd_num++;
 	}
 	free(line);
-	return (0);
+	return (last_status);
 }

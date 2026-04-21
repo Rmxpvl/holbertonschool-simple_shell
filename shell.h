@@ -10,6 +10,6 @@
 
 extern char **environ;
 
-void	execute(char *line, char **argv, int cmd_num);
+int	execute(char *line, char **argv, int cmd_num);
 
 #endif /* SHELL_H */
