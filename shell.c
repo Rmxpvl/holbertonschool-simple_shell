@@ -3,48 +3,6 @@
 extern char **environ;
 
 /**
- * find_in_path - searches PATH directories for an executable
- * @cmd: command name (no slash)
- *
- * Return: allocated full path string, or NULL if not found
- */
-char *find_in_path(char *cmd)
-{
-	char *path_env, *path_copy, *dir, *full;
-	size_t len;
-
-	path_env = getenv("PATH");
-	if (!path_env || path_env[0] == '\0')
-		return (NULL);
-
-	path_copy = strdup(path_env);
-	if (!path_copy)
-		return (NULL);
-
-	dir = strtok(path_copy, ":");
-	while (dir)
-	{
-		len = strlen(dir) + strlen(cmd) + 2;
-		full = malloc(len);
-		if (!full)
-		{
-			free(path_copy);
-			return (NULL);
-		}
-		sprintf(full, "%s/%s", dir, cmd);
-		if (access(full, X_OK) == 0)
-		{
-			free(path_copy);
-			return (full);
-		}
-		free(full);
-		dir = strtok(NULL, ":");
-	}
-	free(path_copy);
-	return (NULL);
-}
-
-/**
  * execute - forks and executes a command with its arguments
  * @args: NULL-terminated array of argument strings
  * @prog_name: shell program name for error messages
@@ -54,51 +12,23 @@ char *find_in_path(char *cmd)
  */
 int execute(char **args, char *prog_name, int line_num)
 {
-	char *path;
-	int need_free = 0, status = 0;
+	int status = 0;
 	pid_t pid;
-
-	if (args[0][0] == '/' || args[0][0] == '.')
-	{
-		if (access(args[0], F_OK) != 0)
-		{
-			fprintf(stderr, "%s: %d: %s: not found\n",
-				prog_name, line_num, args[0]);
-			return (127);
-		}
-		path = args[0];
-	}
-	else
-	{
-		path = find_in_path(args[0]);
-		if (!path)
-		{
-			fprintf(stderr, "%s: %d: %s: not found\n",
-				prog_name, line_num, args[0]);
-			return (127);
-		}
-		need_free = 1;
-	}
 
 	pid = fork();
 	if (pid == -1)
 	{
 		perror("fork");
-		if (need_free)
-			free(path);
 		return (1);
 	}
 	if (pid == 0)
 	{
-		args[0] = path;
-		execve(path, args, environ);
+		execve(args[0], args, environ);
 		fprintf(stderr, "%s: %d: %s: not found\n",
-			prog_name, line_num, path);
+			prog_name, line_num, args[0]);
 		exit(127);
 	}
 	waitpid(pid, &status, 0);
-	if (need_free)
-		free(path);
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
 	return (1);
