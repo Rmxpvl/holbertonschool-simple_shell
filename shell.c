@@ -47,20 +47,20 @@ char *find_in_path(char *cmd, char **envp)
 }
 
 /**
- * get_path - resolves full path for a command
- * @line: the command (absolute path or name)
- * @envp: environment variables
+ * get_path - validates command path
+ * @line: the command (must be an absolute path)
+ * @envp: environment variables (unused for task 0.1)
  * @sfree: set to 1 if returned path must be freed
  *
- * Return: full path or NULL if not found
+ * Return: path if it's absolute, NULL otherwise
  */
 char *get_path(char *line, char **envp, int *sfree)
 {
+	(void)envp;
 	*sfree = 0;
-	if (strchr(line, '/'))
+	if (line[0] == '/' && access(line, F_OK) == 0)
 		return (line);
-	*sfree = 1;
-	return (find_in_path(line, envp));
+	return (NULL);
 }
 
 /**
@@ -74,17 +74,18 @@ char *get_path(char *line, char **envp, int *sfree)
  */
 int execute(char *line, char **argv, char **envp, int cmd_num)
 {
-	char *path, *args[2];
+	char *path;
+	char *args[2];
 	int sfree = 0, status = 0;
 	pid_t pid;
 
 	path = get_path(line, envp, &sfree);
 	if (!path)
 	{
-		fprintf(stderr, "%s: %d: %s: not found\n", argv[0], cmd_num, line);
+		fprintf(stderr, "%s: %d: %s: No such file or directory\n", argv[0], cmd_num, line);
 		return (127);
 	}
-	args[0] = path;
+	args[0] = line;
 	args[1] = NULL;
 	pid = fork();
 	if (pid == -1)
@@ -97,7 +98,7 @@ int execute(char *line, char **argv, char **envp, int cmd_num)
 	if (pid == 0)
 	{
 		execve(path, args, envp);
-		fprintf(stderr, "%s: %d: %s: not found\n", argv[0], cmd_num, line);
+		fprintf(stderr, "%s: %d: %s: No such file or directory\n", argv[0], cmd_num, line);
 		exit(127);
 	}
 	waitpid(pid, &status, 0);
