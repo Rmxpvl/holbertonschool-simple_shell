@@ -1,52 +1,6 @@
 #include "shell.h"
 
 /**
- * find_in_path - searches for a command in PATH directories
- * @cmd: the command name to search for
- * @envp: environment variables array
- *
- * Return: malloc'd full path if found, NULL otherwise
- */
-char *find_in_path(char *cmd, char **envp)
-{
-	int i;
-	char *path = NULL, *dup, *dir, *full;
-	size_t len;
-
-	for (i = 0; envp[i]; i++)
-	{
-		if (strncmp(envp[i], "PATH=", 5) == 0)
-		{
-			path = envp[i] + 5;
-			break;
-		}
-	}
-	if (!path || path[0] == '\0')
-		return (NULL);
-	dup = strdup(path);
-	if (!dup)
-		return (NULL);
-	dir = strtok(dup, ":");
-	while (dir)
-	{
-		len = strlen(dir) + strlen(cmd) + 2;
-		full = malloc(len);
-		if (!full)
-			break;
-		sprintf(full, "%s/%s", dir, cmd);
-		if (access(full, X_OK) == 0)
-		{
-			free(dup);
-			return (full);
-		}
-		free(full);
-		dir = strtok(NULL, ":");
-	}
-	free(dup);
-	return (NULL);
-}
-
-/**
  * get_path - validates command path
  * @line: the command (must be an absolute path)
  * @envp: environment variables (unused for task 0.1)
@@ -68,11 +22,10 @@ char *get_path(char *line, char **envp, int *sfree)
  * @line: the command to run
  * @argv: shell argv for error messages
  * @envp: environment variables
- * @cmd_num: command number for error messages
  *
  * Return: exit status of the child process
  */
-int execute(char *line, char **argv, char **envp, int cmd_num)
+int execute(char *line, char **argv, char **envp)
 {
 	char *path;
 	char *args[2];
@@ -82,7 +35,7 @@ int execute(char *line, char **argv, char **envp, int cmd_num)
 	path = get_path(line, envp, &sfree);
 	if (!path)
 	{
-		fprintf(stderr, "%s: %d: %s: No such file or directory\n", argv[0], cmd_num, line);
+		fprintf(stderr, "%s: %s: No such file or directory\n", argv[0], line);
 		return (127);
 	}
 	args[0] = line;
@@ -98,7 +51,7 @@ int execute(char *line, char **argv, char **envp, int cmd_num)
 	if (pid == 0)
 	{
 		execve(path, args, envp);
-		fprintf(stderr, "%s: %d: %s: No such file or directory\n", argv[0], cmd_num, line);
+		fprintf(stderr, "%s: %s: No such file or directory\n", argv[0], line);
 		exit(127);
 	}
 	waitpid(pid, &status, 0);
@@ -123,7 +76,7 @@ int main(int argc, char **argv, char **envp)
 	char *newline;
 	size_t len = 0;
 	ssize_t nread;
-	int cmd_num = 1, last_status = 0;
+	int last_status = 0;
 
 	(void)argc;
 	while (1)
@@ -148,8 +101,7 @@ int main(int argc, char **argv, char **envp)
 			free(line);
 			return (last_status);
 		}
-		last_status = execute(line, argv, envp, cmd_num);
-		cmd_num++;
+		last_status = execute(line, argv, envp);
 	}
 	free(line);
 	return (last_status);
