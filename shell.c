@@ -96,11 +96,6 @@ int main(int argc, char **argv, char **envp)
 			*newline = '\0';
 		if (line[0] == '\0')
 			continue;
-		if (strcmp(line, "exit") == 0)
-		{
-			free(line);
-			return (last_status);
-		}
 		last_status = execute(line, argv, envp);
 	}
 	free(line);
