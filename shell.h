@@ -10,6 +10,8 @@
 
 extern char **environ;
 
-int	execute(char *line, char **argv, int cmd_num);
+char	*find_in_path(char *cmd, char **envp);
+char	*get_path(char *line, char **envp, int *sfree);
+int	execute(char *line, char **argv, char **envp, int cmd_num);
 
 #endif /* SHELL_H */

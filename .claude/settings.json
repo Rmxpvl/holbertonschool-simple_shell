@@ -18,7 +18,10 @@
       "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ show HEAD:shell.c)",
       "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ log --oneline --all -10)",
       "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ show 99569fd:shell.c)",
-      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ ls-files)"
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ ls-files)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ log --oneline -3)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ show --stat af4d5b4)",
+      "Bash(git -C /home/rmxpvl/holberton/projects/holbertonschool-simple_shell/ diff HEAD shell.c README.md man_1_simple_shell)"
     ]
   }
 }
