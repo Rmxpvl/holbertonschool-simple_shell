@@ -4,48 +4,106 @@
 simple_shell \- a simple UNIX command line interpreter
 
 .SH SYNOPSIS
-.B simple_shell
+.B hsh
+[\fIscript\fR]
 
 .SH DESCRIPTION
-.B simple_shell
+.B hsh
 is a minimal UNIX command line interpreter (shell).
-It reads commands from standard input, one per line,
-and executes them using
-.BR execve (2).
+It reads commands from standard input one per line and executes them.
+Commands are located by searching each directory listed in the
+.B PATH
+environment variable, or may be specified as absolute or relative paths.
 
-In interactive mode, a prompt is displayed before each command.
-In non-interactive mode, commands are read from a pipe or file.
+In interactive mode a prompt
+.B ($)
+is displayed before each command.
+In non-interactive mode commands are read from a pipe or file without a prompt.
 
-.SH USAGE
+.SH INVOCATION
+If standard input is a terminal,
+.B hsh
+runs in interactive mode and displays a prompt.
+Otherwise it reads commands silently (non-interactive mode).
+
+.SH BUILT-IN COMMANDS
+.TP
+.B exit
+Exit the shell. The exit status is the status of the last executed command.
+.TP
+.B env
+Print all environment variables, one per line, in the form
+.IR NAME=value .
+
+.SH COMMAND EXECUTION
+For each command line,
+.B hsh
+tokenises the input on whitespace to produce a command name and its arguments.
+
+If the command name contains a slash it is used as a direct path.
+Otherwise
+.B hsh
+searches each directory in
+.B PATH
+in order and executes the first match found.
+
+If no executable is found the shell prints an error to standard error:
+
+.RS
+.nf
+hsh: \fIline_number\fR: \fIcommand\fR: not found
+.fi
+.RE
+
+and returns exit status 127.
+
+.SH EXIT STATUS
+The exit status of the shell is the exit status of the last command executed.
+Exit status 127 means the command was not found.
+
+.SH ENVIRONMENT
+.TP
+.B PATH
+Colon-separated list of directories searched for executables.
+
+.SH EXAMPLES
 Interactive mode:
+
 .RS
 .nf
 $ ./hsh
-($) /bin/ls
+($) ls
+hsh  shell.c  shell.h
+($) /bin/echo hello
+hello
 ($) exit
+$
 .fi
 .RE
 
 Non-interactive mode:
+
 .RS
 .nf
+$ echo "ls" | ./hsh
+hsh  shell.c  shell.h
 $ echo "/bin/ls" | ./hsh
+hsh  shell.c  shell.h
 .fi
 .RE
-
-.SH EXIT STATUS
-The exit status of the shell is the exit status of the last command executed.
-If a command is not found, the exit status is 127.
-
-.SH ENVIRONMENT
-The current environment is passed to executed commands via
-.BR execve (2).
-
-.SH AUTHORS
-Remy Pinville <remy.pinville@gmail.com>
-Ilann Camelin <I.camelin74@gmail.com>
 
 .SH SEE ALSO
 .BR sh (1),
 .BR execve (2),
-.BR fork (2)
+.BR fork (2),
+.BR waitpid (2),
+.BR getenv (3)
+
+.SH AUTHORS
+Remy Pinville <remy.pinville@gmail.com>
+.br
+Ilann Camelin <I.camelin74@gmail.com>
+
+.SH BUGS
+No semicolon, pipe, or redirection support.
+Arrow-key history and line editing are not implemented.
