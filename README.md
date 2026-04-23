@@ -99,4 +99,5 @@ All source functions strictly reside at the repository root, maximizing compilat
 
 ---
 ## Authors
-- **Holberton School Cohort** - *Initial Work / System Specifications*
+Remy Pinville https://github.com/Rmxpvl
+Ilyan Camelin https://github.com/kaiserr999
